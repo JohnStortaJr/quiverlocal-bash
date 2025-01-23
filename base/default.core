@@ -1,0 +1,15 @@
+ServerAdmin __SERVERADMIN__
+ServerName __DOMAINNAME__
+DocumentRoot __DOMAINDIR__
+
+<Directory __DOMAINDIR__>
+    Options FollowSymLinks
+    AllowOverride Limit Options FileInfo
+    DirectoryIndex index.php
+    Require all granted
+</Directory>
+
+<Directory __DOMAINDIR__/wp-content>
+    Options FollowSymLinks
+    Require all granted
+</Directory>

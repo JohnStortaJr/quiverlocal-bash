@@ -1,0 +1,138 @@
+#!/usr/bin/bash
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+USER=`whoami`
+USER_HOME=/home/$USER
+QUIVER_ROOT=`dirname "$(realpath $0)"`
+QUIVER_DB="${USER_HOME}/quiverdb"
+APACHE_ROOT=/etc/apache2
+PYTHON_EXEC=`which python3`
+
+BACKGROUND_BBLUE="\u001b[44;1m"
+BACKGROUND_END="\u001b[0m"
+
+### Install any of the required packages that are missing
+function installRequiredPackages() {
+    echo "${bold}►►► Updating Repositories...${normal}"
+    sudo apt update 
+    echo ""
+
+    echo "${bold}►►► Installing Apache...${normal}"
+    sudo apt --yes install apache2 ghostscript libapache2-mod-php 
+    echo ""
+
+    echo "${bold}►►► Installing PHP...${normal}"
+    sudo apt --yes install php php-bcmath php-curl php-imagick php-intl php-json php-mbstring php-mysql php-xml php-zip
+    echo ""
+
+    echo "${bold}►►► Installing pip...${normal}"
+    sudo apt --yes install python3-pip
+    echo ""
+
+    echo "${bold}►►► Installing MySQL...${normal}"
+    sudo apt --yes install mysql-server
+    echo ""
+
+    echo "${bold}►►► Installing VirtualEnv...${normal}"
+    sudo apt --yes install python3-virtualenv
+    echo ""
+}
+
+
+function createVirtualEnv() {
+    echo ""
+    echo "${bold}►►► Creating Quiver Virtual Environment${normal}"
+
+    #python3 -m pip install virtualenv
+    #echo ""
+
+    virtualenv -p $PYTHON_EXEC .quiverenv
+    echo ""
+}
+
+
+### Install all required Python modules
+function installPythonModules() {
+    #echo "${bold}►►► Installing pyOpenSSL...${normal}"
+    #pip3 install pyOpenSSL
+    #echo ""
+
+    echo "${bold}►►► Installing MySQL Connector...${normal}"
+    pip3 install mysql-connector-python
+    echo ""
+}
+
+
+function createQuiverDB() {
+    echo "${bold}►►► Creating QuiverDB...${normal}"
+
+    echo $QUIVER_DB
+    echo $QUIVER_DB/sites
+    echo $QUIVER_DB/imports
+    echo $QUIVER_DB/certificates
+
+    if test ! -d ${QUIVER_DB}; then
+        mkdir $QUIVER_DB
+    fi
+
+    if test ! -d ${QUIVER_DB}/sites; then
+        mkdir $QUIVER_DB/sites
+    fi
+
+    if test ! -d ${QUIVER_DB}/imports; then
+        mkdir $QUIVER_DB/imports
+    fi
+
+    if test ! -d ${QUIVER_DB}/certificates; then
+        mkdir $QUIVER_DB/certificates
+    fi
+}
+
+
+
+### Change Apache to run as the current user
+function changeApacheUser() {
+    echo "${bold}►►► Updating Apache Ownership${normal}"
+
+    cp $APACHE_ROOT/envvars $QUIVER_ROOT/tmp/tenvars
+    sed -i "s/APACHE_RUN_USER=www-data/APACHE_RUN_USER=$USER/g" $QUIVER_ROOT/tmp/tenvars
+    sed -i "s/APACHE_RUN_GROUP=www-data/APACHE_RUN_GROUP=$USER/g" $QUIVER_ROOT/tmp/tenvars
+    sudo mv $QUIVER_ROOT/tmp/tenvars $APACHE_ROOT/envvars
+    sudo chown root: $APACHE_ROOT/envvars
+
+    echo "Apache ownership set to ${USER}"
+    echo ""
+}
+
+
+### Restart Apache
+function restartApache() {
+    sudo systemctl restart apache2
+}
+
+# Run sudo to force password prior to executing the script
+sudo -k
+sudo echo ""
+
+printf " ${BACKGROUND_BBLUE}Setting Up QuiverLocal${BACKGROUND_END} \n\n"
+installRequiredPackages
+createQuiverDB
+createVirtualEnv
+
+changeApacheUser
+restartApache
+
+### Enter virtual environment
+source .quiverenv/bin/activate
+
+installPythonModules
+
+### Exit virtual environment
+deactivate
+
+printf "${BACKGROUND_BBLUE} QuiverLocal setup complete ${BACKGROUND_END}\n"
+echo "Launch QuiverLocal using ${bold}${QUIVER_ROOT}/quiver${normal}"
+
+
