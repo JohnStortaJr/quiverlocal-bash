@@ -15,7 +15,7 @@ WordPress is actually a very simple configuration. There is an underlying databa
 
 After spending some time documenting all of the steps needed to build out an environment, I was ready to automate the process.
 
-If you want to use the Python version which includes a more user-friendly, menu-driven interface, check out the [https://github.com/JohnStortaJr/quiverlocal](quiverlocal-python) repository.
+If you want to use the Python version which includes a more user-friendly, menu-driven interface, check out the [quiverlocal-python](https://github.com/JohnStortaJr/quiverlocal) repository.
 
 ## Bash Scripts
 I have a background in Unix, so my initial plan was to create bash scripts for each of the different tasks. These would include the following.
