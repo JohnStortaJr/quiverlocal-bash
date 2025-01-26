@@ -3,6 +3,8 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+HOST_OS="Unknown"
+
 USER=`whoami`
 USER_HOME=/home/$USER
 QUIVER_ROOT=`dirname "$(realpath $0)"`
@@ -13,31 +15,65 @@ PYTHON_EXEC=`which python3`
 BACKGROUND_BBLUE="\u001b[44;1m"
 BACKGROUND_END="\u001b[0m"
 
+function determineHostOS() {
+    ISFEDORA=`cat /etc/*release | grep -ci fedora`
+    ISDEBIAN=`cat /etc/*release | grep -ci debian`
+    ISUBUNTU=`cat /etc/*release | grep -ci ubuntu`
+    
+    if [ ${ISFEDORA} -gt 0 ]; then
+        HOST_OS="Fedora"
+    elif [ ${ISUBUNTU} -gt 0 ]; then
+        HOST_OS="Ubuntu"
+    elif [ ${ISDEBIAN} -gt 0 ]; then
+        HOST_OS="Debian"
+    fi
+
+    if [ ${HOST_OS} == "Unknown" ]; then
+        echo "ERROR: Could not determine host Operating System"
+        echo "Quiverlocal is tested to work with Fedora and Debian"
+        echo "Exiting"
+        return 1
+    else 
+        echo "Installing Quiverlocal for ${HOST_OS}..."
+        echo ""
+    fi
+}
+
 ### Install any of the required packages that are missing
 function installRequiredPackages() {
-    echo "${bold}►►► Updating Repositories...${normal}"
-    sudo apt update 
-    echo ""
+    if [ ${HOST_OS} == "Debian" ] || [ ${HOST_OS} == "Ubuntu" ]; then
+        echo "${bold}►►► Updating Repositories...${normal}"
+        sudo apt update 
+        echo ""
 
-    echo "${bold}►►► Installing Apache...${normal}"
-    sudo apt --yes install apache2 ghostscript libapache2-mod-php 
-    echo ""
+        echo "${bold}►►► Installing Apache...${normal}"
+        sudo apt --yes install apache2 ghostscript libapache2-mod-php 
+        echo ""
 
-    echo "${bold}►►► Installing PHP...${normal}"
-    sudo apt --yes install php php-bcmath php-curl php-imagick php-intl php-json php-mbstring php-mysql php-xml php-zip
-    echo ""
+        echo "${bold}►►► Installing PHP...${normal}"
+        sudo apt --yes install php php-bcmath php-curl php-imagick php-intl php-json php-mbstring php-mysql php-xml php-zip
+        echo ""
 
-    echo "${bold}►►► Installing pip...${normal}"
-    sudo apt --yes install python3-pip
-    echo ""
+        echo "${bold}►►► Installing MySQL...${normal}"
+        sudo apt --yes install mysql-server
+        echo ""
+    elif [ ${HOST_OS} == "Fedora" ]; then
+        echo "${bold}►►► Updating System...${normal}"
+        sudo dnf update -y 
+        echo ""
 
-    echo "${bold}►►► Installing MySQL...${normal}"
-    sudo apt --yes install mysql-server
-    echo ""
+        echo "${bold}►►► Installing Apache...${normal}"
+        sudo dnf install httpd -y 
+        echo ""
 
-    echo "${bold}►►► Installing VirtualEnv...${normal}"
-    sudo apt --yes install python3-virtualenv
-    echo ""
+        echo "${bold}►►► Installing PHP...${normal}"
+        sudo dnf install php php-fpm php-mysqlnd php-opcache php-gd php-xml php-mbstring php-curl php-pecl-imagick php-pecl-zip libzip -y
+        echo ""
+
+        echo "${bold}►►► Installing MySQL...${normal}"
+        sudo dnf install mysql-server -y
+        echo ""
+    fi
 }
 
 
@@ -117,22 +153,23 @@ sudo -k
 sudo echo ""
 
 printf " ${BACKGROUND_BBLUE}Setting Up QuiverLocal${BACKGROUND_END} \n\n"
+determineHostOS
 installRequiredPackages
 createQuiverDB
-createVirtualEnv
+#createVirtualEnv
 
 changeApacheUser
-restartApache
+#restartApache
 
 ### Enter virtual environment
-source .quiverenv/bin/activate
+#source .quiverenv/bin/activate
 
-installPythonModules
+#installPythonModules
 
 ### Exit virtual environment
-deactivate
+#deactivate
 
-printf "${BACKGROUND_BBLUE} QuiverLocal setup complete ${BACKGROUND_END}\n"
-echo "Launch QuiverLocal using ${bold}${QUIVER_ROOT}/quiver${normal}"
+#printf "${BACKGROUND_BBLUE} QuiverLocal setup complete ${BACKGROUND_END}\n"
+#echo "Launch QuiverLocal using ${bold}${QUIVER_ROOT}/quiver${normal}"
 
 
