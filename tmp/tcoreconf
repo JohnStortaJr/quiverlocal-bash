@@ -1,15 +1,15 @@
 ServerAdmin name@domain.local
 ServerName dev7.johnstortajr.local
-DocumentRoot /var/www/dev7.johnstortajr.local
+DocumentRoot /var/www/html/dev7.johnstortajr.local
 
-<Directory /var/www/dev7.johnstortajr.local>
+<Directory /var/www/html/dev7.johnstortajr.local>
     Options FollowSymLinks
     AllowOverride Limit Options FileInfo
     DirectoryIndex index.php
     Require all granted
 </Directory>
 
-<Directory /var/www/dev7.johnstortajr.local/wp-content>
+<Directory /var/www/html/dev7.johnstortajr.local/wp-content>
     Options FollowSymLinks
     Require all granted
 </Directory>

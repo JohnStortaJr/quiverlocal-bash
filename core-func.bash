@@ -37,7 +37,7 @@ function initializeVariables() {
         APACHE_CONF=$APACHE_ROOT/conf.d
         APACHE_LOG=/var/log/httpd
 
-        DOMAIN_HOME=/var/www
+        DOMAIN_HOME=/var/www/html
         DOMAIN_CONFIG=$APACHE_CONF
     else
         APACHE_ROOT=/etc/apache2
@@ -158,6 +158,7 @@ function installLatestWordpress() {
     cd $DOMAIN_HOME
     sudo curl https://wordpress.org/latest.tar.gz | sudo tar zx -C $DOMAIN_HOME
     sudo mv $DOMAIN_HOME/wordpress $DOMAIN_HOME/$DOMAIN_NAME
+    sudo chown -R apache:apache $DOMAIN_HOME/$DOMAIN_NAME
 }
 
 
