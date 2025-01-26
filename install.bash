@@ -64,12 +64,10 @@ if [ $goNoGo != "y" ] && [ $goNoGo != "Y" ]; then
 fi
 
 # Configuration accepted. Proceed with the installation.
-installRequiredPackages
 installLatestWordpress
 
-echo $HOST_OS
-
 if [ ${HOST_OS} != "Fedora" ]; then
+    echo $HOST_OS
     changeApacheUser
 fi
 
@@ -79,8 +77,8 @@ createEmptyDatabase # no changes needed
 
 # Create new wp-config.php file from default template
 ls -al $QUIVER_ROOT/tmp/twpconf
-#cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $QUIVER_ROOT/tmp/twpconf
-sudo cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
+cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $QUIVER_ROOT/tmp/twpconf
+cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
 
 updateWordPressConfig # no changes needed
 restartApache
