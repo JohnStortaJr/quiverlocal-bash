@@ -1,25 +1,52 @@
 #!/usr/bin/bash
 
-# Install any of the required packages that are missing
-function installRequiredPackages() {
-    sudo apt install apache2 ghostscript jq libapache2-mod-php mysql-server php php-bcmath php-curl php-imagick php-intl php-json php-mbstring php-mysql php-xml php-zip
+function determineHostOS() {
+    ISFEDORA=`cat /etc/*release | grep -ci fedora`
+    ISDEBIAN=`cat /etc/*release | grep -ci debian`
+    ISUBUNTU=`cat /etc/*release | grep -ci ubuntu`
+    
+    if [ ${ISFEDORA} -gt 0 ]; then
+        HOST_OS="Fedora"
+    elif [ ${ISUBUNTU} -gt 0 ]; then
+        HOST_OS="Ubuntu"
+    elif [ ${ISDEBIAN} -gt 0 ]; then
+        HOST_OS="Debian"
+    fi
+
+    if [ ${HOST_OS} == "Unknown" ]; then
+        echo "ERROR: Could not determine host Operating System"
+        echo "Quiverlocal is tested to work with Fedora and Debian"
+        echo "Exiting"
+        return 1
+    else 
+        echo "Running Quiverlocal for ${HOST_OS}..."
+        echo ""
+    fi
 }
 
 function initializeVariables() {
     USER=`whoami`
     USER_HOME=/home/$USER
 
-    CERT_HOME=$USER_HOME/certificates
-    EXPORT_HOME=$USER_HOME/exports
-    IMPORT_FILE=$EXPORT_HOME/NOFILE
-    IMPORT_DATA=$EXPORT_HOME/NODATA
+    CERT_HOME=$QUIVER_DB/certificates
+    IMPORT_FILE=$QUIVER_DB/imports/NOFILE
+    IMPORT_DATA=$QUIVER_DB/imports/NODATA
 
-    DOMAIN_HOME=$USER_HOME/domains
-    DOMAIN_CONFIG=$DOMAIN_HOME/config
+    if [ ${HOST_OS} == "Fedora" ]; then
+        APACHE_ROOT=/etc/httpd
+        APACHE_CONF=$APACHE_ROOT/conf.d
+        APACHE_LOG=/var/log/httpd
 
-    APACHE_ROOT=/etc/apache2
-    APACHE_CONF=$APACHE_ROOT/sites-available
-    APACHE_LOG=/var/log/apache2
+        DOMAIN_HOME=/var/www
+        DOMAIN_CONFIG=$APACHE_CONF
+    else
+        APACHE_ROOT=/etc/apache2
+        APACHE_CONF=$APACHE_ROOT/sites-available
+        APACHE_LOG=/var/log/apache2
+
+        DOMAIN_HOME=$USER_HOME/domains
+        DOMAIN_CONFIG=$DOMAIN_HOME/config
+    fi
 
     SITE_NAME="localdev01"
     DOMAIN_NAME="${SITE_NAME}.local"
@@ -129,8 +156,8 @@ function createRootCertificate() {
 #Download the latest wordpress files, unpack them into the $DOMAIN_HOME, and rename the directory
 function installLatestWordpress() {
     cd $DOMAIN_HOME
-    curl https://wordpress.org/latest.tar.gz | tar zx -C $DOMAIN_HOME
-    mv $DOMAIN_HOME/wordpress $DOMAIN_HOME/$DOMAIN_NAME
+    sudo curl https://wordpress.org/latest.tar.gz | sudo tar zx -C $DOMAIN_HOME
+    sudo mv $DOMAIN_HOME/wordpress $DOMAIN_HOME/$DOMAIN_NAME
 }
 
 
@@ -155,7 +182,7 @@ function createCoreDomainConfig() {
     sed -i "s|__DOMAINNAME__|$DOMAIN_NAME|g" $QUIVER_ROOT/tmp/tcoreconf
     sed -i "s|__DOMAINDIR__|$DOMAIN_HOME/$DOMAIN_NAME|g" $QUIVER_ROOT/tmp/tcoreconf
 
-    cp $QUIVER_ROOT/tmp/tcoreconf $DOMAIN_CONFIG/$SITE_NAME.core
+    sudo cp $QUIVER_ROOT/tmp/tcoreconf $DOMAIN_CONFIG/$SITE_NAME.core
 }
 
 # setup the Apache configuration file for this domain
@@ -169,14 +196,16 @@ function createApacheConfig() {
     sudo mv $QUIVER_ROOT/tmp/thttpconf $APACHE_CONF/$SITE_NAME.conf
     sudo chown root: $APACHE_CONF/$SITE_NAME.conf
 
-    # Enable the site
-    sudo a2ensite $SITE_NAME
+    if [ ${HOST_OS} != "Fedora" ]; then
+        # Enable the site
+        sudo a2ensite $SITE_NAME
 
-    # Disable the default site
-    sudo a2dissite 000-default
+        # Disable the default site
+        sudo a2dissite 000-default
 
-    # Enable the mod_rewrite module
-    sudo a2enmod rewrite
+        # Enable the mod_rewrite module
+        sudo a2enmod rewrite
+    fi
 }
 
 function trustSite() {
@@ -247,7 +276,7 @@ function createWordPressConfig() {
     sed -i "s|.*'NONCE_SALT.*|$NEW_NONCE_SALT|g" $QUIVER_ROOT/tmp/twpconf
 
     #ls -al $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
-    cp $QUIVER_ROOT/tmp/twpconf $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
+    sudo cp $QUIVER_ROOT/tmp/twpconf $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
 }
 
 ### Update existing WordPress config

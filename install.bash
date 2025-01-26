@@ -3,8 +3,15 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+HOST_OS="Unknown"
+USER=`whoami`
+USER_HOME=/home/$USER
 QUIVER_ROOT=`dirname "$(realpath $0)"`
+QUIVER_DB="${USER_HOME}/quiverdb"
 source $QUIVER_ROOT/core-func.bash
+
+# Confirm the OS is either Fedora or Debian, otherwise exit with an error
+determineHostOS()
 
 echo $QUIVER_ROOT
 # Run a sudo command to capture the password as soon as the script is run
@@ -62,14 +69,14 @@ installLatestWordpress
 changeApacheUser
 createCoreDomainConfig
 createApacheConfig
-createEmptyDatabase
+createEmptyDatabase # no changes needed
 
 # Create new wp-config.php file from default template
 ls -al $QUIVER_ROOT/tmp/twpconf
 cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $QUIVER_ROOT/tmp/twpconf
 cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
 
-updateWordPressConfig
+updateWordPressConfig # no changes needed
 restartApache
 
 # Write JSON to config database

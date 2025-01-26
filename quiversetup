@@ -145,7 +145,11 @@ function changeApacheUser() {
 
 ### Restart Apache
 function restartApache() {
-    sudo systemctl restart apache2
+    if [ ${HOST_OS} == "Fedora" ]; then
+        sudo systemctl restart httpd
+    else
+        sudo systemctl restart apache2
+    fi
 }
 
 # Run sudo to force password prior to executing the script
@@ -158,8 +162,10 @@ installRequiredPackages
 createQuiverDB
 #createVirtualEnv
 
-changeApacheUser
-#restartApache
+if [ ${HOST_OS} != "Fedora" ]; then
+    changeApacheUser
+fi
+restartApache
 
 ### Enter virtual environment
 #source .quiverenv/bin/activate
@@ -169,7 +175,7 @@ changeApacheUser
 ### Exit virtual environment
 #deactivate
 
-#printf "${BACKGROUND_BBLUE} QuiverLocal setup complete ${BACKGROUND_END}\n"
+printf "${BACKGROUND_BBLUE} QuiverLocal setup complete ${BACKGROUND_END}\n"
 #echo "Launch QuiverLocal using ${bold}${QUIVER_ROOT}/quiver${normal}"
 
 
