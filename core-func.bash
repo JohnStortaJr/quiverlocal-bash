@@ -178,7 +178,7 @@ function createCoreDomainConfig() {
         mkdir $DOMAIN_CONFIG
     fi
 
-    sed "s|__SERVERADMIN__|$SERVER_ADMIN|g" $QUIVER_ROOT/../base/default.core > $QUIVER_ROOT/tmp/tcoreconf
+    sed "s|__SERVERADMIN__|$SERVER_ADMIN|g" $QUIVER_ROOT/base/default.core > $QUIVER_ROOT/tmp/tcoreconf
     sed -i "s|__DOMAINNAME__|$DOMAIN_NAME|g" $QUIVER_ROOT/tmp/tcoreconf
     sed -i "s|__DOMAINDIR__|$DOMAIN_HOME/$DOMAIN_NAME|g" $QUIVER_ROOT/tmp/tcoreconf
 
@@ -190,8 +190,8 @@ function createApacheConfig() {
 
     echo "Updating Apache Configuration"
     echo $DOMAIN_NAME
-    cp $QUIVER_ROOT/../base/default_http.conf $QUIVER_ROOT/tmp/thttpconf
-    cp $QUIVER_ROOT/../base/default_http.conf $QUIVER_ROOT/tmp/thttpconf.bak
+    cp $QUIVER_ROOT/base/default_http.conf $QUIVER_ROOT/tmp/thttpconf
+    cp $QUIVER_ROOT/base/default_http.conf $QUIVER_ROOT/tmp/thttpconf.bak
     sed -i "s|__CORECONFIG__|$DOMAIN_CONFIG/$SITE_NAME.core|g" $QUIVER_ROOT/tmp/thttpconf
     sudo mv $QUIVER_ROOT/tmp/thttpconf $APACHE_CONF/$SITE_NAME.conf
     sudo chown root: $APACHE_CONF/$SITE_NAME.conf
@@ -212,7 +212,7 @@ function trustSite() {
     # Should check to make sure there is not already a 443 block in the file
     cp $APACHE_CONF/$SITE_NAME.conf $QUIVER_ROOT/tmp/thttpsconf
 
-    cat $QUIVER_ROOT/../base/default_https.conf >> $QUIVER_ROOT/tmp/thttpsconf
+    cat $QUIVER_ROOT/base/default_https.conf >> $QUIVER_ROOT/tmp/thttpsconf
 
     sed -i "s|__CORECONFIG__|$DOMAIN_CONFIG/$SITE_NAME.core|g" $QUIVER_ROOT/tmp/thttpsconf
     sed -i "s|__CERTFILE__|$CERT_FILE|g" $QUIVER_ROOT/tmp/thttpsconf
@@ -240,7 +240,7 @@ function trustSite() {
 
 ### Setup empty database
 function createEmptyDatabase() {
-    cp $QUIVER_ROOT/../base/default_dbsetup.sql $QUIVER_ROOT/tmp/tdbconf
+    cp $QUIVER_ROOT/base/default_dbsetup.sql $QUIVER_ROOT/tmp/tdbconf
     sed -i "s|__DBNAME__|$DB_NAME|g" $QUIVER_ROOT/tmp/tdbconf
     sed -i "s|__DBUSER__|$DB_USER|g" $QUIVER_ROOT/tmp/tdbconf
     sed -i "s|__DBPASS__|$DB_PASS|g" $QUIVER_ROOT/tmp/tdbconf
@@ -315,7 +315,7 @@ function updateWordPressConfig() {
     sed -i "s|.*'LOGGED_IN_SALT.*|$NEW_LOGGED_IN_SALT|g" $QUIVER_ROOT/tmp/twpconf
     sed -i "s|.*'NONCE_SALT.*|$NEW_NONCE_SALT|g" $QUIVER_ROOT/tmp/twpconf
 
-    cp $QUIVER_ROOT/tmp/twpconf $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
+    sudo cp $QUIVER_ROOT/tmp/twpconf $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
 }
 
 function updateWordPressURLs() {
@@ -350,7 +350,11 @@ function importData() {
 
 # Restart Apache
 function restartApache() {
-    sudo systemctl restart apache2
+    if [ ${HOST_OS} == "Fedora" ]; then
+        sudo systemctl restart httpd
+    else
+        sudo systemctl restart apache2
+    fi
 }
 
 function uninstallSite() {

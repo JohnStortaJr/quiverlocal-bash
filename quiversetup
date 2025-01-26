@@ -152,6 +152,10 @@ function restartApache() {
     fi
 }
 
+function startMySQL() {
+    sudo systemctl restart mysqld 
+}
+
 # Run sudo to force password prior to executing the script
 sudo -k
 sudo echo ""
@@ -166,6 +170,7 @@ if [ ${HOST_OS} != "Fedora" ]; then
     changeApacheUser
 fi
 restartApache
+startMySQL
 
 ### Enter virtual environment
 #source .quiverenv/bin/activate

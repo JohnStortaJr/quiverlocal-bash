@@ -1,0 +1,4 @@
+CREATE USER IF NOT EXISTS wordpress@localhost IDENTIFIED BY 'start123';
+CREATE DATABASE dev7_johnstortajr_db;
+GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,ALTER,REFERENCES ON dev7_johnstortajr_db.* TO wordpress@localhost;
+FLUSH PRIVILEGES;
