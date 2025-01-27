@@ -22,6 +22,7 @@ function determineHostOS() {
     
     if [ ${ISFEDORA} -gt 0 ]; then
         HOST_OS="Fedora"
+        APACHE_ROOT=/etc/httpd
     elif [ ${ISUBUNTU} -gt 0 ]; then
         HOST_OS="Ubuntu"
     elif [ ${ISDEBIAN} -gt 0 ]; then
@@ -34,7 +35,7 @@ function determineHostOS() {
         echo "Exiting"
         return 1
     else 
-        echo "Installing Quiverlocal for ${HOST_OS}..."
+        echo "Setting up Quiverlocal for ${HOST_OS}..."
         echo ""
     fi
 }
@@ -74,30 +75,6 @@ function installRequiredPackages() {
         sudo dnf install mysql-server -y
         echo ""
     fi
-}
-
-
-function createVirtualEnv() {
-    echo ""
-    echo "${bold}►►► Creating Quiver Virtual Environment${normal}"
-
-    #python3 -m pip install virtualenv
-    #echo ""
-
-    virtualenv -p $PYTHON_EXEC .quiverenv
-    echo ""
-}
-
-
-### Install all required Python modules
-function installPythonModules() {
-    #echo "${bold}►►► Installing pyOpenSSL...${normal}"
-    #pip3 install pyOpenSSL
-    #echo ""
-
-    echo "${bold}►►► Installing MySQL Connector...${normal}"
-    pip3 install mysql-connector-python
-    echo ""
 }
 
 
@@ -168,21 +145,12 @@ printf " ${BACKGROUND_BBLUE}Setting Up QuiverLocal${BACKGROUND_END} \n\n"
 determineHostOS
 installRequiredPackages
 createQuiverDB
-#createVirtualEnv
 
 if [ ${HOST_OS} != "Fedora" ]; then
     changeApacheUser
 fi
 restartApache
 restartMySQL
-
-### Enter virtual environment
-#source .quiverenv/bin/activate
-
-#installPythonModules
-
-### Exit virtual environment
-#deactivate
 
 printf "${BACKGROUND_BBLUE} QuiverLocal setup complete ${BACKGROUND_END}\n"
 #echo "Launch QuiverLocal using ${bold}${QUIVER_ROOT}/quiver${normal}"

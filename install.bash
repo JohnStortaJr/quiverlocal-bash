@@ -17,7 +17,7 @@ echo $QUIVER_ROOT
 # Run a sudo command to capture the password as soon as the script is run
 sudo echo "${bold}QuiverLocal WordPress Development Environment Tool${normal} (install)"
 
-# Define key variables
+# Define key variables 
 initializeVariables
 
 # Collect site details
@@ -76,7 +76,7 @@ createApacheConfig
 createEmptyDatabase # no changes needed
 
 # Create new wp-config.php file from default template
-ls -al $QUIVER_ROOT/tmp/twpconf
+#ls -al $QUIVER_ROOT/tmp/twpconf
 #cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $QUIVER_ROOT/tmp/twpconf
 sudo cp $DOMAIN_HOME/$DOMAIN_NAME/wp-config-sample.php $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
 

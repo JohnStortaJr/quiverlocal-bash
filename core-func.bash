@@ -48,7 +48,7 @@ function initializeVariables() {
         DOMAIN_CONFIG=$DOMAIN_HOME/config
     fi
 
-    SITE_NAME="localdev01"
+    SITE_NAME="dev1.sitename"
     DOMAIN_NAME="${SITE_NAME}.local"
     SERVER_ADMIN="name@domain.local"
 
@@ -317,6 +317,7 @@ function updateWordPressConfig() {
     sed -i "s|.*'NONCE_SALT.*|$NEW_NONCE_SALT|g" $QUIVER_ROOT/tmp/twpconf
 
     sudo cp $QUIVER_ROOT/tmp/twpconf $DOMAIN_HOME/$DOMAIN_NAME/wp-config.php
+    sudo chown -R apache:apache $DOMAIN_HOME/$DOMAIN_NAME
 }
 
 function updateWordPressURLs() {
